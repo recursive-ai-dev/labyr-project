@@ -1,308 +1,346 @@
-# Labyr Project Development Plan
+# Diegetic Dark Fantasy Filesystem - Complete Implementation Plan
 
-## Overview
+## Vision: From Folder to Forbearance
 
-This document outlines the comprehensive roadmap for transforming the mathematically rigorous labyrinth generator (`labyr-v0.6.py`) into a production-ready CLI tool. The current implementation demonstrates strong mathematical foundations in graph theory, measure theory, and information theory, but requires significant architectural and engineering improvements for production deployment.
+Transform the user's computer filesystem into an immersive, diegetic dark fantasy world where file management becomes an interactive RPG experience. This is not just themed folders, but a complete reimagining of the desktop environment as a living, breathing fantasy realm.
 
-## Current State Analysis
+## Core Design Principles
 
-### Strengths
-- **Mathematical Rigor**: Implements formal graph theory (DAGs), measure spaces, and Markov chains
-- **Theoretical Foundation**: Strong academic backing with proper entropy calculations and topological constraints
-- **Semantic Coherence**: Sophisticated theme-based naming system with transition kernels
-- **Validation Framework**: Built-in verification for acyclicity, thematic coherence, and capacity constraints
+### 1. Diegetic Interface Paradigm
+- **Every UI element is part of the world** - no non-diegetic overlays or external tools
+- **Desktop background becomes the environment** - view from a tower window, candlelit library, etc.
+- **Cursor becomes a diegetic object** - spectral hand, raven, or magical effect
+- **File operations become world interactions** - opening a file is unrolling a scroll, copying is creating a duplicate artifact
 
-### Current Limitations
-- **Monolithic Architecture**: Single-file script with tightly coupled concerns
-- **Limited CLI**: Basic argparse implementation without advanced features
-- **No Testing**: No automated test suite for validation
-- **No Packaging**: Not distributable as a proper Python package
-- **Limited Error Handling**: Basic exception handling without structured logging
-- **No Configuration**: Hardcoded values scattered throughout the codebase
+### 2. Mathematical Foundation + RPG Mechanics
+- **Preserve the rigorous graph theory** from `labyr-v0.6.py`
+- **Enhance with progression systems** - unlock areas through exploration
+- **Add discovery mechanics** - hidden files as lost artifacts
+- **Implement character representation** - user as "Seeker of Knowledge" or "Warden of the Archive"
 
-## Development Roadmap
+### 3. Immersive Aesthetics
+- **Dark fantasy visual theme** throughout all interactions
+- **Lore-rich naming conventions** that tell stories
+- **Atmospheric audio and visual effects**
+- **Consistent world-building** in every detail
 
-### Phase 1: Foundation & Architecture (Weeks 1-2)
+## Architecture Overview
 
-#### 1.1 Project Structure & Modularization
-- [ ] **Create project skeleton** with proper Python package structure
-  - `src/labyr/` - Main package directory
-  - `tests/` - Comprehensive test suite
-  - `docs/` - Documentation and examples
-  - `scripts/` - Development and deployment scripts
-- [ ] **Extract core modules** from monolithic script:
-  - `src/labyr/core/measure_space.py` - Semantic measure space implementation
-  - `src/labyr/core/graph.py` - Labyrinth graph generation
-  - `src/labyr/core/entropy.py` - Entropy calculations and validation
-  - `src/labyr/core/combinatorics.py` - Path generation algorithms
-- [ ] **Create configuration system**:
-  - `src/labyr/config.py` - Centralized configuration management
-  - Support for environment variables and config files
-  - Default values and validation for all parameters
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    DIEGETIC DESKTOP LAYER                   │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
+│  │ Themed Desktop  │  │ Diegetic Cursor │  │ Fantasy      │ │
+│  │ Background      │  │ & Effects       │  │ Notifications│ │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                   DIEGETIC FILE BROWSER                     │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
+│  │ Fantasy File    │  │ Progression     │  │ Discovery    │ │
+│  │ Manager UI      │  │ System          │  │ Mechanics    │ │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                   ENHANCED LABYRINTH ENGINE                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
+│  │ Mathematical    │  │ RPG Mechanics   │  │ Lore Engine  │ │
+│  │ Graph Theory    │  │ Integration     │  │ Generation   │ │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                      FILESYSTEM LAYER                       │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
+│  │ Generated       │  │ Themed Files    │  │ Hidden       │ │
+│  │ Directory Tree  │  │ & Content       │  │ Areas        │ │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
 
-#### 1.2 Dependency Management
-- [ ] **Create pyproject.toml** with modern Python packaging standards
-  - Define project metadata (name, version, author, description)
-  - Declare dependencies (numpy, scipy for advanced calculations if needed)
-  - Set up development dependencies (pytest, black, ruff, mypy)
-- [ ] **Implement virtual environment management**:
-  - Requirements files for different environments
-  - Poetry or pip-tools for dependency resolution
-  - Lock files for reproducible builds
+## Phase 1: Foundation & Mathematical Core (Weeks 1-2)
 
-#### 1.3 Code Quality & Standards
-- [ ] **Establish code style guidelines**:
-  - Black for code formatting
-  - Ruff for linting and static analysis
-  - MyPy for type checking
-- [ ] **Add comprehensive type hints** throughout the codebase
-- [ ] **Implement docstring standards** (Google or NumPy style)
+### 1.1 Enhanced Labyrinth Engine
+- [ ] **Preserve mathematical rigor** from `labyr-v0.6.py`
+  - Maintain graph theory foundations (DAGs, topological constraints)
+  - Keep semantic measure space and Markov chains
+  - Preserve entropy calculations and validation
+- [ ] **Add RPG mechanics to graph generation**
+  - Progression-based access requirements
+  - Hidden nodes requiring discovery mechanics
+  - "Cursed" directories with special properties
+  - Character progression affecting accessible areas
+- [ ] **Implement lore engine**
+  - Generate narrative content for each directory
+  - Create interconnected story elements
+  - Implement "Forbidden Library" and "Haunted Archive" metaphors
 
-### Phase 2: Testing & Validation (Weeks 2-3)
+### 1.2 Mathematical + RPG Integration
+- [ ] **Character system integration**
+  - User "level" affecting accessible depth/complexity
+  - "Knowledge" stat unlocking thematic areas
+  - "Courage" stat required for dangerous areas
+- [ ] **Progressive unlocking mechanics**
+  - Keys as special files that unlock directories
+  - Rituals requiring specific file sequences
+  - Discovery requiring exploration of connected paths
+- [ ] **Dynamic difficulty scaling**
+  - Adjust labyrinth complexity based on user progression
+  - Thematic coherence based on user preferences
+  - Entropy requirements scaling with "character level"
 
-#### 2.1 Unit Testing Framework
-- [ ] **Set up pytest configuration** with proper test discovery
-- [ ] **Create unit tests for core mathematical components**:
-  - `tests/core/test_measure_space.py` - Semantic alphabet and transition kernels
-  - `tests/core/test_graph.py` - DAG generation and acyclicity verification
-  - `tests/core/test_entropy.py` - Shannon entropy calculations
-  - `tests/core/test_combinatorics.py` - Path generation and collision detection
-- [ ] **Property-based testing** using Hypothesis for mathematical invariants:
-  - Graph acyclicity under all valid parameters
-  - Entropy calculations for known distributions
-  - Capacity constraints and collision probabilities
+## Phase 2: Diegetic Desktop Environment (Weeks 2-3)
 
-#### 2.2 Integration Testing
-- [ ] **End-to-end workflow tests**:
-  - Full labyrinth generation with various parameter combinations
-  - File system creation and verification
-  - CLI interface testing with different argument combinations
-- [ ] **Performance testing**:
-  - Benchmark generation times for different scales
-  - Memory usage analysis for large labyrinth structures
-  - Stress testing for maximum capacity scenarios
+### 2.1 Desktop Transformation
+- [ ] **Themed desktop backgrounds**
+  - Animated gothic cityscape view from tower window
+  - Candlelit library interior with flickering effects
+  - Storm-wracked landscape with dynamic weather
+  - Animated transitions between different "locations"
+- [ ] **Diegetic cursor system**
+  - Spectral hand pointing at interactive elements
+  - Raven perched on screen edge
+  - Magical orb that glows near important files
+  - Context-sensitive cursor changes (scroll icon near documents, key icon near locked areas)
+- [ ] **Atmospheric effects**
+  - Subtle particle effects (dust motes, floating embers)
+  - Dynamic lighting that responds to cursor movement
+  - Weather effects visible through "windows"
+  - Ambient soundscapes that change based on location
 
-#### 2.3 Mathematical Validation
-- [ ] **Implement statistical validation tests**:
-  - Verify Markov chain properties of generated themes
-  - Validate entropy distribution across generated paths
-  - Test collision probability bounds against theoretical predictions
-- [ ] **Create validation benchmarks** against known mathematical results
+### 2.2 Diegetic Notifications & Feedback
+- [ ] **Fantasy-themed notifications**
+  - Scrolls unfurling with new information
+  - Ghostly whispers for system alerts
+  - Magical runes appearing for important events
+  - Tome pages turning for file operations
+- [ ] **Progress indicators as world elements**
+  - Hourglass for long operations
+  - Magical ritual completion markers
+  - Library catalog updates
+  - Archive indexing as scribe activity
 
-### Phase 3: CLI Enhancement & User Experience (Weeks 3-4)
+## Phase 3: Diegetic File Browser Interface (Weeks 3-4)
 
-#### 3.1 Advanced CLI Interface
-- [ ] **Replace basic argparse with Click** for more sophisticated CLI:
-  - Subcommands for different operations (generate, analyze, validate)
-  - Interactive mode for parameter exploration
-  - Configuration file support with `--config` flag
-- [ ] **Implement comprehensive argument validation**:
-  - Range checking for numerical parameters
-  - Theme validation for semantic coherence
-  - Path validation for file system operations
-- [ ] **Add progress indicators and status reporting**:
-  - Progress bars for long-running generation tasks
-  - Real-time statistics display (entropy, collision probability, etc.)
-  - Verbose logging with different detail levels
+### 3.1 Fantasy File Manager UI
+- [ ] **Replace standard file browser** with diegetic interface
+  - Library shelves instead of folder trees
+  - Scroll archives instead of file lists
+  - Magical portals instead of navigation buttons
+  - Tome bindings as file icons
+- [ ] **Interactive exploration mechanics**
+  - "Reading" files by opening magical tomes
+  - "Copying" files by creating duplicate scrolls
+  - "Deleting" files by banishing to shadow realm
+  - "Moving" files by teleporting artifacts
+- [ ] **Discovery and exploration features**
+  - Fog of war revealing new areas as explored
+  - Hidden passages requiring specific conditions
+  - Traps and puzzles protecting valuable files
+  - Random encounters with "digital spirits"
 
-#### 3.2 User Experience Features
-- [ ] **Implement dry-run mode** with detailed preview output
-- [ ] **Add configuration profiles** for common use cases:
-  - "Cityscape" profile with urban themes
-  - "Dungeon" profile with fantasy themes
-  - "Scientific" profile with high entropy requirements
-- [ ] **Create help system** with examples and best practices
-- [ ] **Implement output formatting options**:
-  - JSON output for programmatic consumption
-  - Graph visualization export (DOT format)
-  - Summary reports with statistical analysis
+### 3.2 Progression & Character System
+- [ ] **Visible character representation**
+  - Avatar icon that changes with progression
+  - Equipment system (different "tools" for different tasks)
+  - Skill tree affecting file management capabilities
+  - Reputation system with different areas
+- [ ] **Achievement and milestone system**
+  - Discovering hidden areas unlocks new abilities
+  - Completing file organization tasks grants rewards
+  - Exploring all areas of a theme unlocks mastery
+  - Helping "digital spirits" improves standing
 
-#### 3.3 Error Handling & Recovery
-- [ ] **Implement structured error handling**:
-  - Custom exception hierarchy for different error types
-  - Graceful degradation when parameters exceed capacity
-  - Clear error messages with suggested solutions
-- [ ] **Add input validation and sanitization**:
-  - Path traversal attack prevention
-  - Invalid character filtering for file names
-  - Resource limit checking (disk space, permissions)
+## Phase 4: Content Generation & Lore (Weeks 4-5)
 
-### Phase 4: Production Infrastructure (Weeks 4-5)
+### 4.1 Dynamic Lore System
+- [ ] **Generate interconnected narratives**
+  - Each directory tells part of a larger story
+  - Files contain fragments of ancient knowledge
+  - Hidden areas contain forbidden secrets
+  - Character progression reveals deeper lore
+- [ ] **Thematic consistency enforcement**
+  - Maintain dark fantasy tone throughout
+  - Ensure lore elements are interconnected
+  - Create "plot hooks" for user exploration
+  - Implement branching narratives based on user choices
 
-#### 4.1 Logging & Monitoring
-- [ ] **Implement structured logging system**:
-  - Different log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-  - Structured log output (JSON format for machine processing)
-  - Log rotation and size management
-- [ ] **Add performance metrics collection**:
-  - Generation time tracking
-  - Memory usage monitoring
-  - Statistical summary of generated structures
-- [ ] **Create diagnostic tools**:
-  - Labyrinth structure analysis
-  - Theme distribution reports
-  - Entropy validation tools
+### 4.2 File Content Generation
+- [ ] **Generate thematic file contents**
+  - Text files as ancient scrolls or grimoires
+  - Images as magical diagrams or maps
+  - Videos as recorded visions or prophecies
+  - Audio files as ghostly whispers or chants
+- [ ] **Interactive file content**
+  - Riddles that must be solved to access content
+  - Puzzles that reveal hidden information
+  - Magical effects when certain files are opened
+  - Dynamic content that changes based on user actions
 
-#### 4.2 Configuration Management
-- [ ] **Implement configuration file support**:
-  - YAML/JSON configuration files
-  - Environment variable overrides
-  - Command-line argument precedence
-- [ ] **Create configuration validation**:
-  - Schema validation for config files
-  - Parameter consistency checking
-  - Default value management
+## Phase 5: Audio & Visual Polish (Weeks 5-6)
 
-#### 4.3 Documentation & Examples
-- [ ] **Create comprehensive documentation**:
-  - API documentation with Sphinx
-  - User guide with examples and tutorials
-  - Mathematical background documentation
-- [ ] **Develop example configurations** for different use cases
-- [ ] **Create tutorial notebooks** demonstrating advanced features
+### 5.1 Atmospheric Audio System
+- [ ] **Dynamic soundscapes**
+  - Ambient sounds that change based on location
+  - Weather effects (thunder, wind, rain)
+  - Distant city sounds or library ambiance
+  - Magical effects for file operations
+- [ ] **Interactive audio feedback**
+  - Different sounds for different file types
+  - Character movement sounds
+  - Discovery chimes and achievement fanfares
+  - Warning sounds for dangerous areas
 
-### Phase 5: Packaging & Distribution (Weeks 5-6)
+### 5.2 Visual Effects & Polish
+- [ ] **Particle system**
+  - Dust motes in sunbeams
+  - Magical sparkles for interactions
+  - Smoke effects for file operations
+  - Blood splatters for "cursed" files
+- [ ] **Animation system**
+  - Smooth transitions between areas
+  - Animated opening/closing of "containers"
+  - Character movement animations
+  - Weather and time-of-day cycles
 
-#### 5.1 Package Distribution
-- [ ] **Create distribution packages**:
-  - Source distribution (.tar.gz)
-  - Universal wheel (.whl)
-  - Platform-specific wheels if needed
-- [ ] **Set up PyPI publishing**:
-  - Automated publishing workflow
-  - Version management strategy
-  - Release notes generation
-- [ ] **Create installation scripts** for different platforms
+## Phase 6: Integration & Polish (Weeks 6-7)
 
-#### 5.2 Continuous Integration/Deployment
-- [ ] **Set up GitHub Actions workflow**:
-  - Automated testing on multiple Python versions
-  - Code quality checks (linting, type checking)
-  - Automated package building and testing
-- [ ] **Implement release automation**:
-  - Version bumping
-  - Changelog generation
-  - Automated PyPI publishing
+### 6.1 System Integration
+- [ ] **Seamless desktop integration**
+  - Work alongside existing applications
+  - Preserve normal file system functionality
+  - Allow switching between diegetic and standard interfaces
+  - Maintain compatibility with existing workflows
+- [ ] **Performance optimization**
+  - Ensure smooth 60fps operation
+  - Optimize memory usage for large file systems
+  - Implement efficient rendering for complex scenes
+  - Background processing for heavy operations
 
-#### 5.3 Quality Assurance
-- [ ] **Security scanning**:
-  - Dependency vulnerability scanning
-  - Code security analysis
-  - Input validation testing
-- [ ] **Performance benchmarking**:
-  - Regression testing for performance
-  - Memory leak detection
-  - Scalability testing
+### 6.2 User Experience Polish
+- [ ] **Accessibility features**
+  - Colorblind-friendly palettes
+  - Adjustable text sizes and contrast
+  - Keyboard navigation support
+  - Screen reader compatibility
+- [ ] **Customization options**
+  - Different fantasy themes (gothic, eldritch, medieval)
+  - Adjustable intensity of diegetic elements
+  - Performance vs. visual quality settings
+  - Personalization of character appearance
 
-### Phase 6: Advanced Features & Optimization (Weeks 6-8)
+## Phase 7: Testing & Deployment (Weeks 7-8)
 
-#### 6.1 Performance Optimization
-- [ ] **Algorithm optimization**:
-  - Memory-efficient graph representation
-  - Optimized entropy calculations
-  - Parallel processing for large structures
-- [ ] **Caching mechanisms**:
-  - Memoization for expensive calculations
-  - Persistent cache for configuration validation
-  - Incremental generation for partial updates
+### 7.1 Comprehensive Testing
+- [ ] **Functional testing**
+  - All file operations work correctly
+  - Progression system functions properly
+  - Lore generation creates coherent narratives
+  - Performance meets targets
+- [ ] **User experience testing**
+  - Immersion quality assessment
+  - Learning curve evaluation
+  - Accessibility verification
+  - Performance across different hardware
 
-#### 6.2 Advanced Mathematical Features
-- [ ] **Implement additional entropy measures**:
-  - Kolmogorov complexity estimation
-  - Fractal dimension analysis
-  - Information-theoretic distance metrics
-- [ ] **Advanced graph algorithms**:
-  - Pathfinding and connectivity analysis
-  - Graph isomorphism detection
-  - Structural complexity metrics
+### 7.2 Deployment & Distribution
+- [ ] **Cross-platform support**
+  - Windows, macOS, Linux compatibility
+  - Different desktop environment integration
+  - Hardware acceleration optimization
+  - Fallback modes for older systems
+- [ ] **Installation and setup**
+  - Simple one-click installation
+  - Automatic desktop environment configuration
+  - Theme selection during setup
+  - Tutorial mode for new users
 
-#### 6.3 Extensibility Framework
-- [ ] **Plugin system** for custom themes and generators
-- [ ] **API for programmatic access** to core functionality
-- [ ] **Integration hooks** for external tools and workflows
+## Technical Implementation Details
 
-## Technical Specifications
+### Core Technologies
+- **Python** for backend logic and filesystem operations
+- **JavaScript/HTML/CSS** for diegetic UI layer
+- **Electron or similar** for desktop application framework
+- **WebGL/Canvas** for advanced visual effects
+- **Audio APIs** for atmospheric soundscapes
 
-### Core Architecture Principles
-1. **Separation of Concerns**: Clear boundaries between mathematical logic, CLI interface, and file system operations
-2. **Dependency Injection**: Modular design allowing easy testing and extension
-3. **Immutable Data Structures**: Where possible, to ensure thread safety and predictability
-4. **Error-First Design**: Comprehensive error handling and graceful degradation
+### Architecture Patterns
+- **Modular design** allowing independent development of components
+- **Event-driven architecture** for loose coupling between systems
+- **Plugin system** for extensible themes and mechanics
+- **Configuration-driven** for easy customization and localization
 
-### Mathematical Guarantees to Maintain
-1. **Graph Acyclicity**: All generated structures must be valid DAGs
-2. **Thematic Coherence**: Markov chain properties must be preserved
-3. **Entropy Bounds**: Generated structures must meet specified complexity requirements
-4. **Capacity Constraints**: No collisions or overflows in path generation
+### Performance Considerations
+- **Lazy loading** of visual assets and lore content
+- **Caching system** for frequently accessed areas
+- **Background processing** for heavy computational tasks
+- **Adaptive quality** based on system capabilities
 
-### Performance Targets
-- **Generation Speed**: < 1 second for 1000-node structures
-- **Memory Usage**: < 100MB for 10,000-node structures
-- **Scalability**: Linear or near-linear scaling with structure size
+## Success Metrics
 
-### Compatibility Requirements
-- **Python Versions**: 3.9+ support
-- **Operating Systems**: Cross-platform (Linux, macOS, Windows)
-- **File Systems**: Compatible with NTFS, ext4, APFS, etc.
+### Technical Metrics
+- **Performance**: 60fps operation on mid-range hardware
+- **Memory Usage**: <500MB for typical usage scenarios
+- **Compatibility**: Works on 95% of target systems
+- **Reliability**: <1% crash rate in normal usage
+
+### User Experience Metrics
+- **Immersion**: Users report feeling "in the world" 80% of the time
+- **Usability**: New users can perform basic tasks within 5 minutes
+- **Engagement**: Average session length >30 minutes
+- **Satisfaction**: >4.5/5 user satisfaction rating
+
+### Business Metrics
+- **Adoption**: 10,000+ active users within 6 months
+- **Retention**: 60% monthly active user retention
+- **Community**: Active modding and theme creation community
+- **Reviews**: >4.0/5 average rating on app stores
 
 ## Risk Mitigation
 
 ### Technical Risks
-1. **Performance Degradation**: Mitigate through early benchmarking and optimization
-2. **Memory Leaks**: Address through comprehensive testing and profiling
-3. **Algorithm Complexity**: Maintain mathematical rigor while optimizing performance
+- **Performance Issues**: Early optimization and profiling
+- **Compatibility Problems**: Extensive testing across platforms
+- **Memory Leaks**: Comprehensive testing and monitoring
+- **Integration Complexity**: Modular design with clear interfaces
 
 ### Project Risks
-1. **Scope Creep**: Maintain focus on core functionality during initial phases
-2. **Resource Constraints**: Prioritize features based on user value and implementation complexity
-3. **Maintenance Burden**: Invest in automated testing and documentation to reduce long-term costs
-
-## Success Metrics
-
-### Functional Metrics
-- **Test Coverage**: > 90% code coverage with meaningful tests
-- **Performance**: Meet or exceed all performance targets
-- **Reliability**: < 1% failure rate in automated testing
-
-### User Experience Metrics
-- **Installation Success Rate**: > 95% successful installations
-- **Documentation Quality**: User feedback rating > 4.0/5.0
-- **Feature Adoption**: Track usage of advanced features through telemetry
-
-### Development Metrics
-- **Code Quality**: Pass all linting and type checking rules
-- **Build Success Rate**: > 99% CI/CD pipeline success rate
-- **Issue Resolution Time**: Average resolution time < 48 hours
+- **Scope Creep**: Strict phase-based development with clear deliverables
+- **Resource Constraints**: Prioritize core features and implement incrementally
+- **User Adoption**: Extensive user testing and feedback incorporation
+- **Maintenance Burden**: Invest in automated testing and documentation
 
 ## Timeline Summary
 
-| Phase | Duration | Key Deliverables |
-|-------|----------|------------------|
-| 1: Foundation | 2 weeks | Modular architecture, configuration system |
-| 2: Testing | 1 week | Comprehensive test suite, validation framework |
-| 3: CLI | 1 week | Advanced CLI, user experience features |
-| 4: Production | 1 week | Logging, monitoring, documentation |
-| 5: Distribution | 1 week | Packaging, CI/CD, quality assurance |
-| 6: Optimization | 2 weeks | Performance optimization, advanced features |
+| Phase | Duration | Focus | Key Deliverables |
+|-------|----------|-------|------------------|
+| 1: Foundation | 2 weeks | Mathematical core + RPG mechanics | Enhanced labyrinth engine with progression |
+| 2: Desktop | 2 weeks | Diegetic environment | Themed desktop, cursor, notifications |
+| 3: Browser | 2 weeks | Diegetic file manager | Fantasy UI, exploration mechanics |
+| 4: Content | 2 weeks | Lore & generation | Dynamic narratives, thematic content |
+| 5: Polish | 2 weeks | Audio & visuals | Soundscapes, effects, animations |
+| 6: Integration | 1 week | System integration | Performance optimization, compatibility |
+| 7: Deployment | 1 week | Testing & release | Cross-platform support, installation |
 
-**Total Estimated Time**: 8 weeks for complete production deployment
+**Total Estimated Time**: 12 weeks for complete diegetic dark fantasy filesystem
 
 ## Next Steps
 
 1. **Immediate Actions**:
-   - Set up development environment with proper tooling
-   - Create initial project structure and configuration
-   - Begin extracting core modules from existing script
+   - Set up development environment with required frameworks
+   - Create project structure supporting both Python backend and JavaScript frontend
+   - Begin enhancing `labyr-v0.6.py` with RPG mechanics
 
 2. **Week 1 Focus**:
-   - Complete project skeleton setup
-   - Extract and refactor core mathematical components
-   - Establish basic testing framework
+   - Complete mathematical foundation preservation
+   - Implement basic character system integration
+   - Create lore engine prototype
 
 3. **Milestone Reviews**:
-   - End of Week 2: Architecture review and testing framework validation
-   - End of Week 4: CLI enhancement completion and user experience review
-   - End of Week 6: Production infrastructure and packaging readiness
-   - End of Week 8: Final optimization and feature completion
+   - End of Week 2: Mathematical + RPG core functionality
+   - End of Week 4: Complete diegetic desktop environment
+   - End of Week 6: Full diegetic file browser with progression
+   - End of Week 8: Complete content generation system
+   - End of Week 10: Audio/visual polish and optimization
+   - End of Week 12: Cross-platform deployment and release
 
-This plan provides a comprehensive roadmap for transforming the current mathematical labyrinth generator into a robust, production-ready CLI tool while maintaining the rigorous mathematical foundations that make the project unique.
+This plan transforms the project from a mathematical labyrinth generator into a complete diegetic dark fantasy filesystem experience, maintaining the rigorous mathematical foundations while adding the immersive RPG elements that make the experience truly game-like.
