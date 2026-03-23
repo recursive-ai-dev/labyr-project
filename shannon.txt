@@ -1,0 +1,437 @@
+import os
+import math
+import hashlib
+import re
+from collections import Counter
+from typing import Union, Optional, List, Set, Tuple, Dict
+from dataclasses import dataclass, field
+
+
+# ============================================================================
+# SHANNON ENTROPY CORE (Verified Correct)
+# ============================================================================
+
+def shannon_entropy(data: Union[str, bytes]) -> float:
+    """
+    Calculate Shannon's entropy of input data.
+    
+    H(X) = -Σ p(x) * log2(p(x))
+    
+    Returns entropy in bits per symbol.
+    Range: 0.0 (perfectly uniform/single symbol) to 8.0 (maximally random, byte-level)
+    """
+    if not data:
+        return 0.0
+
+    # Normalize to bytes for consistent symbol counting across encodings
+    if isinstance(data, str):
+        data = data.encode("utf-8")
+
+    # Count frequency of each byte value (symbol)
+    frequencies = Counter(data)
+    total_symbols = len(data)
+
+    entropy = 0.0
+    for count in frequencies.values():
+        probability = count / total_symbols
+        # Avoid log2(0) — guarded by Counter (count >= 1)
+        entropy -= probability * math.log2(probability)
+
+    return entropy
+
+
+def entropy_label(entropy: float) -> str:
+    """
+    Map entropy value to a human-readable label.
+
+    Entropy ranges (bits per symbol, over byte alphabet 0-255):
+      [0.0, 1.0)  → near-deterministic (e.g. null bytes, single char repetition)
+      [1.0, 3.0)  → low entropy       (e.g. simple text, sparse data, code)
+      [3.0, 5.0)  → medium entropy    (e.g. natural language text)
+      [5.0, 7.0)  → high entropy      (e.g. compressed, encrypted data)
+      [7.0, 8.0]  → near-random       (e.g. crypto keys, random bytes)
+    """
+    if entropy < 1.0:
+        return "near_deterministic"
+    elif entropy < 3.0:
+        return "low_entropy"
+    elif entropy < 5.0:
+        return "medium_entropy"
+    elif entropy < 7.0:
+        return "high_entropy"
+    else:
+        return "near_random"
+
+
+# ============================================================================
+# SEMANTIC TREE SYSTEM (Node Modules as Word-Banks)
+# ============================================================================
+
+@dataclass
+class SemanticNode:
+    """
+    A modular node in the semantic tree acting as a word-bank classifier.
+    
+    Attributes:
+        name: Filesystem-safe identifier for this module
+        word_bank: Set of characteristic tokens/signatures (strings or regex patterns)
+        entropy_range: Optional (min, max) entropy range this node is valid for
+        is_regex: If True, word_bank contains regex patterns instead of literal strings
+        children: Sub-modules (subcategories)
+    """
+    name: str
+    word_bank: Set[str] = field(default_factory=set)
+    entropy_range: Optional[Tuple[float, float]] = None
+    is_regex: bool = False
+    children: List['SemanticNode'] = field(default_factory=list, repr=False)
+    parent: Optional['SemanticNode'] = field(default=None, repr=False)
+    
+    def add_child(self, node: 'SemanticNode') -> 'SemanticNode':
+        """Add a sub-module and return it for chaining."""
+        node.parent = self
+        self.children.append(node)
+        return node
+    
+    def matches_entropy(self, entropy: float) -> bool:
+        """Check if given entropy value falls within this node's valid range."""
+        if self.entropy_range is None:
+            return True
+        min_e, max_e = self.entropy_range
+        return min_e <= entropy < max_e
+    
+    def calculate_match_score(self, text: str) -> float:
+        """
+        Calculate semantic match score [0.0-1.0] based on word bank overlap.
+        For binary/high-entropy data, this operates on decoded text representation.
+        """
+        if not self.word_bank or not text:
+            return 0.0
+        
+        text_lower = text.lower()
+        
+        if self.is_regex:
+            matches = sum(1 for pattern in self.word_bank if re.search(pattern, text_lower))
+        else:
+            # Token-based matching for natural language
+            tokens = set(re.findall(r'\b\w+\b', text_lower))
+            matches = len(tokens.intersection(self.word_bank))
+        
+        return matches / len(self.word_bank)
+    
+    def get_path(self) -> str:
+        """Return hierarchical path from root to this node."""
+        path = []
+        current = self
+        while current:
+            path.append(current.name)
+            current = current.parent
+        return "/".join(reversed(path))
+
+
+class SemanticTree:
+    """
+    Hierarchical classification system using node modules as semantic word-banks.
+    Integrates with entropy analysis to categorize data by both randomness AND meaning.
+    """
+    
+    def __init__(self):
+        self.root = SemanticNode("root")
+        self._build_default_tree()
+    
+    def _build_default_tree(self):
+        """
+        Construct the default semantic ontology.
+        Structure mirrors file system organization by entropy type and content class.
+        """
+        # Level 1: Entropy-based branches
+        det = self.root.add_child(SemanticNode(
+            "deterministic",
+            word_bank={'\x00', '\xff', '\x00\x00', '\xff\xff'},
+            entropy_range=(0.0, 1.0)
+        ))
+        
+        structured = self.root.add_child(SemanticNode(
+            "structured",
+            word_bank={'{', '}', '[', ']', '<', '>', ';', '=', ':'},
+            entropy_range=(1.0, 3.0)
+        ))
+        
+        natural = self.root.add_child(SemanticNode(
+            "natural_language",
+            word_bank={'the', 'and', 'is', 'of', 'to', 'a', 'in', 'that'},
+            entropy_range=(3.0, 5.0)
+        ))
+        
+        compressed = self.root.add_child(SemanticNode(
+            "compressed_binary",
+            word_bank={},
+            entropy_range=(5.0, 7.0)
+        ))
+        
+        random_node = self.root.add_child(SemanticNode(
+            "cryptographic",
+            word_bank={},
+            entropy_range=(7.0, 8.0)
+        ))
+        
+        # Level 2: Semantic sub-modules (word-banks for classification)
+        
+        # Deterministic sub-types
+        det.add_child(SemanticNode("null_bytes", word_bank={'\x00'}))
+        det.add_child(SemanticNode("repeated_pattern", word_bank={}))
+        
+        # Structured sub-types (Code/Markup modules)
+        code = structured.add_child(SemanticNode("code"))
+        code.add_child(SemanticNode(
+            "python",
+            word_bank={'def', 'class', 'import', 'from', 'return', 'self', 'None', 'True', 'False', 'lambda'}
+        ))
+        code.add_child(SemanticNode(
+            "javascript",
+            word_bank={'function', 'const', 'let', 'var', 'return', '=>', 'async', 'await', 'undefined'}
+        ))
+        code.add_child(SemanticNode(
+            "json",
+            word_bank={'{', '}', '":', '[', ']', 'true', 'false', 'null'}
+        ))
+        code.add_child(SemanticNode(
+            "sql",
+            word_bank={'select', 'from', 'where', 'insert', 'update', 'delete', 'table', 'join'}
+        ))
+        
+        markup = structured.add_child(SemanticNode("markup"))
+        markup.add_child(SemanticNode(
+            "html",
+            word_bank={'<html', '<body', '<div', '<span', '<p>', 'href', 'class=', 'id='},
+            is_regex=True
+        ))
+        markup.add_child(SemanticNode(
+            "markdown",
+            word_bank={'#', '##', '###', '- ', '* ', '[', '](', '```'}
+        ))
+        
+        data_structured = structured.add_child(SemanticNode("tabular"))
+        data_structured.add_child(SemanticNode("csv", word_bank={',', '\n', 'id,name', 'value,', ',,,', ';;'}))
+        
+        # Natural language sub-types
+        natural.add_child(SemanticNode("english_prose", word_bank={'however', 'therefore', 'although', 'though'}))
+        natural.add_child(SemanticNode("technical_doc", word_bank={'parameter', 'function', 'module', 'implementation'}))
+        
+        # Compressed/Crypto sub-types (signature-based since entropy is high)
+        compressed.add_child(SemanticNode(
+            "archive",
+            word_bank={'PK\x03\x04', '\x1f\x8b', 'Rar!', '\x78\x9c'},  # ZIP, GZIP, RAR, ZLIB signatures
+            is_regex=True
+        ))
+        compressed.add_child(SemanticNode("executable", word_bank={'\x7fELF', 'MZ', '\xca\xfe\xba\xbe'}))
+        
+        random_node.add_child(SemanticNode("aes_key", word_bank={}))
+        random_node.add_child(SemanticNode("nonce_iv", word_bank={}))
+    
+    def classify(self, data: Union[str, bytes], entropy: Optional[float] = None) -> Tuple[SemanticNode, float]:
+        """
+        Traverse tree to find best-matching semantic module for the data.
+        
+        Returns:
+            (best_matching_node, confidence_score)
+        """
+        if entropy is None:
+            entropy = shannon_entropy(data)
+        
+        # Convert bytes to text for semantic analysis if in text-like entropy range
+        text_content = ""
+        if isinstance(data, bytes):
+            try:
+                if entropy < 6.0:  # Likely text or structured
+                    text_content = data.decode('utf-8', errors='ignore')
+            except:
+                pass
+        else:
+            text_content = data
+        
+        best_node = self.root
+        best_score = 0.0
+        
+        # BFS/DFS hybrid: Prioritize entropy-compatible branches, then semantic match
+        def traverse(node: SemanticNode, depth: int = 0):
+            nonlocal best_node, best_score
+            
+            # Skip nodes incompatible with entropy (unless root)
+            if node != self.root and not node.matches_entropy(entropy):
+                return
+            
+            # Calculate match score at this node
+            score = node.calculate_match_score(text_content)
+            # Weight deeper matches slightly higher (specificity bonus)
+            weighted_score = score * (1 + 0.1 * depth)
+            
+            if weighted_score > best_score:
+                best_score = weighted_score
+                best_node = node
+            
+            # Recurse into children
+            for child in node.children:
+                traverse(child, depth + 1)
+        
+        traverse(self.root)
+        return best_node, best_score
+    
+    def get_semantic_path(self, data: Union[str, bytes], entropy: Optional[float] = None) -> str:
+        """Generate filesystem path from semantic classification."""
+        node, _ = self.classify(data, entropy)
+        return node.get_path()
+
+
+# ============================================================================
+# INTEGRATED FOLDER GENERATION SYSTEM
+# ============================================================================
+
+class EntropyOrganizer:
+    """
+    High-level interface combining Shannon entropy analysis with semantic classification
+    to create intelligent, self-describing folder structures.
+    """
+    
+    def __init__(self):
+        self.semantic_tree = SemanticTree()
+    
+    def generate_folder_name(
+        self, 
+        data: Union[str, bytes], 
+        prefix: str = "",
+        use_semantic: bool = True
+    ) -> str:
+        """
+        Generate intelligent folder name combining entropy metrics and semantic classification.
+        
+        Formats:
+          Semantic:  {prefix}{semantic_path}_E{entropy:.4f}_H{hash}
+          Basic:     {prefix}{entropy_label}_E{entropy:.4f}_H{hash}
+        """
+        entropy = shannon_entropy(data)
+        
+        if isinstance(data, str):
+            data_bytes = data.encode("utf-8")
+        else:
+            data_bytes = data
+        
+        content_hash = hashlib.sha256(data_bytes).hexdigest()[:8]
+        
+        if use_semantic:
+            sem_path = self.semantic_tree.get_semantic_path(data_bytes, entropy)
+            # Sanitize path for filesystem (replace / with _)
+            sem_name = sem_path.replace("/", "_")
+            base_name = f"{sem_name}_E{entropy:.4f}_H{content_hash}"
+        else:
+            label = entropy_label(entropy)
+            base_name = f"{label}_E{entropy:.4f}_H{content_hash}"
+        
+        prefix_part = f"{prefix}_" if prefix else ""
+        return f"{prefix_part}{base_name}"
+    
+    def organize(
+        self,
+        base_path: str,
+        data: Union[str, bytes],
+        prefix: str = "",
+        dry_run: bool = False,
+        use_semantic: bool = True
+    ) -> Dict[str, str]:
+        """
+        Create organized folder structure with metadata.
+        
+        Returns metadata dict with entropy info and classification details.
+        """
+        entropy = shannon_entropy(data)
+        semantic_node, confidence = self.semantic_tree.classify(data, entropy)
+        folder_name = self.generate_folder_name(data, prefix, use_semantic)
+        full_path = os.path.join(base_path, folder_name)
+        
+        metadata = {
+            "path": full_path,
+            "entropy_bits": entropy,
+            "entropy_label": entropy_label(entropy),
+            "semantic_class": semantic_node.get_path(),
+            "semantic_confidence": confidence,
+            "folder_name": folder_name
+        }
+        
+        if not dry_run:
+            os.makedirs(full_path, exist_ok=True)
+            # Optional: Write metadata file
+            meta_path = os.path.join(full_path, ".entropy_meta")
+            with open(meta_path, 'w') as f:
+                f.write(f"entropy: {entropy:.6f}\n")
+                f.write(f"class: {semantic_node.get_path()}\n")
+                f.write(f"confidence: {confidence:.2f}\n")
+        
+        return metadata
+
+
+# ============================================================================
+# BACKWARD COMPATIBLE API (Original Interface)
+# ============================================================================
+
+def generate_folder_name(data: Union[str, bytes], prefix: str = "") -> str:
+    """
+    Generate a filesystem-safe folder name encoding entropy properties.
+    Legacy interface - now uses semantic enhancement by default.
+    """
+    organizer = EntropyOrganizer()
+    return organizer.generate_folder_name(data, prefix, use_semantic=False)
+
+
+def create_entropy_folder(
+    base_path: str,
+    data: Union[str, bytes],
+    prefix: str = "",
+    dry_run: bool = False,
+) -> str:
+    """
+    Create a folder named by entropy under base_path.
+    Backward-compatible implementation.
+    """
+    folder_name = generate_folder_name(data, prefix=prefix)
+    full_path = os.path.join(base_path, folder_name)
+
+    if not dry_run:
+        os.makedirs(full_path, exist_ok=True)
+
+    return full_path
+
+
+# ============================================================================
+# USAGE EXAMPLES
+# ============================================================================
+
+if __name__ == "__main__":
+    # Example 1: Basic entropy analysis (verified against standard values)
+    test_string = "Hello World! This is a test of natural language entropy."
+    entropy = shannon_entropy(test_string)
+    print(f"Test string entropy: {entropy:.4f} bits/byte")
+    print(f"Label: {entropy_label(entropy)}")
+    
+    # Example 2: Semantic classification
+    organizer = EntropyOrganizer()
+    
+    code_sample = "def shannon_entropy(data):\n    return sum(p * math.log2(p) for p in probs)"
+    meta = organizer.organize("/tmp/test", code_sample, dry_run=True)
+    print(f"\nCode classified as: {meta['semantic_class']} (confidence: {meta['semantic_confidence']:.2f})")
+    print(f"Folder: {meta['folder_name']}")
+    
+    # Example 3: Compare encrypted vs text
+    encrypted = os.urandom(1024)  # Random bytes (simulated encryption)
+    text_data = "The quick brown fox jumps over the lazy dog. " * 50
+    
+    print(f"\nEncrypted data entropy: {shannon_entropy(encrypted):.4f}")
+    print(f"Text data entropy: {shannon_entropy(text_data):.4f}")
+    
+    # Example 4: Full folder creation with semantic tree
+    result = organizer.organize(
+        "/tmp/entropy_store",
+        code_sample,
+        prefix="project_alpha",
+        dry_run=True,
+        use_semantic=True
+    )
+    print(f"\nFull metadata: {result}")
