@@ -1,0 +1,31 @@
+--- additional-logic-002.py
++++ additional-logic-002.py
+@@ -154,20 +154,20 @@
+ # Grant rewards
+ for ITEM in $GIVES; do
+   if ! grep -q "\\\"$ITEM\\\"" "$STATE"; then
+-    node -e "
++    ITEM="$ITEM" STATE="$STATE" node -e "
+       const fs=require('fs');
+-      const s=JSON.parse(fs.readFileSync('$STATE'));
+-      if(!s.tags.includes('$ITEM')){s.tags.push('$ITEM');s.inventory.push('$ITEM');}
+-      fs.writeFileSync('$STATE',JSON.stringify(s,null,2));
++      const s=JSON.parse(fs.readFileSync(process.env.STATE));
++      if(!s.tags.includes(process.env.ITEM)){s.tags.push(process.env.ITEM);s.inventory.push(process.env.ITEM);}
++      fs.writeFileSync(process.env.STATE,JSON.stringify(s,null,2));
+     "
+     echo "✨ Acquired: $ITEM"
+   fi
+ done
+
+ # Record visit
+-node -e "
++TARGET="$TARGET" STATE="$STATE" node -e "
+   const fs=require('fs');
+-  const s=JSON.parse(fs.readFileSync('$STATE'));
+-  if(!s.visited.includes('$TARGET')) s.visited.push('$TARGET');
+-  fs.writeFileSync('$STATE',JSON.stringify(s,null,2));
++  const s=JSON.parse(fs.readFileSync(process.env.STATE));
++  if(!s.visited.includes(process.env.TARGET)) s.visited.push(process.env.TARGET);
++  fs.writeFileSync(process.env.STATE,JSON.stringify(s,null,2));
+ "
