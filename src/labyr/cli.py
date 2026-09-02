@@ -9,11 +9,16 @@ from __future__ import annotations
 import argparse
 import os
 import random
-import sys
+from collections.abc import Sequence
 from math import log2
-from typing import Sequence
 
-from .core.graph import CombinatorialGenerator, LabyrinthGraph, LabyrinthNode, TopologicalConstraint
+from .core.graph import (
+    CombinatorialGenerator,
+    LabyrinthGraph,
+    LabyrinthNode,
+    TopologicalConstraint,
+    generate_id,
+)
 from .core.measure_space import SemanticMeasureSpace, map_keywords_to_themes
 
 
@@ -22,20 +27,53 @@ def main(argv: Sequence[str] | None = None) -> None:
         description="Mathematically rigorous labyrinth generator using graph theory "
         "and measure-theoretic probability.",
     )
-    parser.add_argument("keywords", nargs="+", help="Semantic keywords to seed the measure space")
-    parser.add_argument("--base", "-b", default="./labyrinth", help="Base directory (root of graph)")
-    parser.add_argument("--count", "-c", type=int, default=25, help="Target number of vertices |V|")
-    parser.add_argument("--depth", "-d", type=int, default=5, help="Maximum depth D (graph diameter bound)")
-    parser.add_argument("--breadth", "-w", type=int, default=4, help="Maximum out-degree (branching factor)")
-    parser.add_argument("--chaos", "-x", type=float, default=0.3, help="Entropy injection factor α ∈ [0,1]")
-    parser.add_argument("--seed", "-s", type=int, default=None, help="Random seed for reproducibility")
-    parser.add_argument("--dry-run", "-n", action="store_true", help="Simulate without file system mutation")
+    parser.add_argument(
+        "keywords", nargs="+", help="Semantic keywords to seed the measure space"
+    )
+    parser.add_argument(
+        "--base", "-b", default="./labyrinth", help="Base directory (root of graph)"
+    )
+    parser.add_argument(
+        "--count", "-c", type=int, default=25, help="Target number of vertices |V|"
+    )
+    parser.add_argument(
+        "--depth",
+        "-d",
+        type=int,
+        default=5,
+        help="Maximum depth D (graph diameter bound)",
+    )
+    parser.add_argument(
+        "--breadth",
+        "-w",
+        type=int,
+        default=4,
+        help="Maximum out-degree (branching factor)",
+    )
+    parser.add_argument(
+        "--chaos",
+        "-x",
+        type=float,
+        default=0.3,
+        help="Entropy injection factor α ∈ [0,1]",
+    )
+    parser.add_argument(
+        "--seed", "-s", type=int, default=None, help="Random seed for reproducibility"
+    )
+    parser.add_argument(
+        "--dry-run",
+        "-n",
+        action="store_true",
+        help="Simulate without file system mutation",
+    )
     parser.add_argument(
         "--verify",
         action="store_true",
         help="Verify graph properties (acyclicity, entropy estimate)",
     )
-    parser.add_argument("--export", "-e", default=None, help="Export graph to shell script")
+    parser.add_argument(
+        "--export", "-e", default=None, help="Export graph to shell script"
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     if args.seed is not None:
@@ -64,7 +102,9 @@ def main(argv: Sequence[str] | None = None) -> None:
     print(f"  Theoretical capacity C(D,B) = {capacity}")
     print(f"  Requested |V| = {count} (utilization: {count / max(capacity, 1):.2%})")
 
-    feasible, max_p, collision_prob = combinatorial.verify_feasibility(count, depth, breadth)
+    feasible, max_p, collision_prob = combinatorial.verify_feasibility(
+        count, depth, breadth
+    )
     if not feasible:
         if count > max_p:
             print(f"  WARNING: Exceeds capacity. Truncating to {max_p}.")
@@ -87,7 +127,12 @@ def main(argv: Sequence[str] | None = None) -> None:
             for i in range(len(parts)):
                 subpath = "/".join(parts[: i + 1])
                 if subpath not in graph.vertices:
-                    node = LabyrinthNode(id=hash(subpath), path=subpath, depth=i, theme=random.choice(themes))
+                    node = LabyrinthNode(
+                        id=generate_id(subpath),
+                        path=subpath,
+                        depth=i,
+                        theme=random.choice(themes),
+                    )
                     graph.vertices[subpath] = node
 
         is_dag = graph.verify_acyclicity()

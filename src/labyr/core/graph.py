@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import hashlib
 import random
 import warnings
 from collections import deque
 from dataclasses import dataclass, field
 from math import exp, floor, log2
-from typing import Dict, Optional, Set, Tuple
 
 from ..legacy import get_legacy_module
 from .measure_space import SemanticAlphabet, SemanticMeasureSpace
 
 _legacy = get_legacy_module()
+
+
+def generate_id(path: str) -> str:
+    """Generates a stable, secure ID using SHA-256."""
+    return hashlib.sha256(path.encode("utf-8")).hexdigest()
 
 
 class TopologicalConstraint:
@@ -32,7 +37,7 @@ class LabyrinthNode:
     path: str
     depth: int
     theme: SemanticAlphabet
-    children: Set[str] = field(default_factory=set)
+    children: set[str] = field(default_factory=set)
     entropy: float = 0.0
 
     def __hash__(self):
@@ -43,17 +48,23 @@ class LabyrinthGraph:
     """Directed acyclic graph representation of the generated labyrinth."""
 
     def __init__(
-        self, max_depth: int, branching_factor: int, chaos: float, measure_space: SemanticMeasureSpace
+        self,
+        max_depth: int,
+        branching_factor: int,
+        chaos: float,
+        measure_space: SemanticMeasureSpace,
     ):
         self.max_depth = max_depth
         self.branching_factor = branching_factor
         self.chaos = chaos
         self.measure = measure_space
-        self.vertices: Dict[str, LabyrinthNode] = {}
-        self.path_space: Set[str] = set()
-        self.root: Optional[LabyrinthNode] = None
+        self.vertices: dict[str, LabyrinthNode] = {}
+        self.path_space: set[str] = set()
+        self.root: LabyrinthNode | None = None
 
-    def _generate_vertex_label(self, current_node: LabyrinthNode) -> Tuple[str, SemanticAlphabet]:
+    def _generate_vertex_label(
+        self, current_node: LabyrinthNode
+    ) -> tuple[str, SemanticAlphabet]:
         if random.random() < self.chaos:
             next_theme = random.choice(list(SemanticAlphabet))
         else:
@@ -62,14 +73,15 @@ class LabyrinthGraph:
         element = self.measure.sample_element(next_theme)
         return element.symbol, next_theme
 
-    def generate(self, target_vertices: int) -> Set[str]:
+    def generate(self, target_vertices: int) -> set[str]:
         if target_vertices <= 0:
             return set()
 
         theoretical_max = sum(
             min(
                 self.branching_factor**d,
-                len(SemanticAlphabet) * (max(len(cat) for cat in self.measure.Ω.values()) ** d),
+                len(SemanticAlphabet)
+                * (max(len(cat) for cat in self.measure.Ω.values()) ** d),
             )
             for d in range(1, self.max_depth + 1)
         )
@@ -89,7 +101,7 @@ class LabyrinthGraph:
             root_path = f"{root_path}_{random.randint(0, 65535):04x}"
 
         self.root = LabyrinthNode(
-            id=hash(root_path),
+            id=generate_id(root_path),
             path=root_path,
             depth=0,
             theme=root_theme,
@@ -112,7 +124,9 @@ class LabyrinthGraph:
             if max_children <= 0:
                 break
 
-            actual_branching = sum(1 for _ in range(max_children) if random.random() < survival_prob)
+            actual_branching = sum(
+                1 for _ in range(max_children) if random.random() < survival_prob
+            )
             actual_branching = max(1, actual_branching) if max_children > 0 else 0
 
             attempts = 0
@@ -131,7 +145,7 @@ class LabyrinthGraph:
                 if new_path in self.path_space:
                     continue
 
-                child_id = hash(new_path) & 0xFFFFFFFFFFFFFFFF
+                child_id = generate_id(new_path)
                 child = LabyrinthNode(
                     id=child_id,
                     path=new_path,
