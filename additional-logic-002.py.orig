@@ -24,22 +24,22 @@ class GameFS {
   async init() {
     console.log('🎮 Generating secure filesystem...');
     await fs.ensureDir(ROOT);
-    
+
     // Create player state (invisible on surface)
     await this.saveState({ tags: ['visitor'], visited: [], inventory: [] });
-    
+
     // Generate world
     for (const room of WORLD_GEN.rooms) {
       await this.createRoom(room);
     }
-    
+
     // Add decoy folders (normal looking, no mechanics)
     for (let i = 0; i < WORLD_GEN.decoys; i++) {
       const fake = `documents-${Math.random().toString(36).slice(2, 6)}`;
       await fs.ensureDir(path.join(ROOT, fake));
       await fs.writeFile(path.join(ROOT, fake, 'readme.txt'), 'Nothing of interest here.');
     }
-    
+
     // Add trap folders
     for (let i = 0; i < WORLD_GEN.traps; i++) {
       const trapDir = path.join(ROOT, 'restricted-zone-' + i);
@@ -47,7 +47,7 @@ class GameFS {
       await fs.writeFile(path.join(trapDir, '.access'), JSON.stringify({ needs: ['admin'], removes: ['torch', 'key-rusty'] }));
       await fs.writeFile(path.join(trapDir, 'WARNING.txt'), 'Security breach detected. Confiscating items.');
     }
-    
+
     // Create navigation wrapper
     await this.createNavigator();
     console.log(`\n✅ World created at: ${path.resolve(ROOT)}`);
@@ -58,31 +58,31 @@ class GameFS {
   async createRoom(room) {
     const dir = path.join(ROOT, room.name);
     await fs.ensureDir(dir);
-    
+
     // Hidden access control file
     await fs.writeFile(path.join(dir, '.access'), JSON.stringify({
       needs: room.needs,
       gives: room.gives,
       tags: room.tags
     }));
-    
+
     // Visible lore file (hints at requirements)
-    const hints = room.needs.length > 0 
+    const hints = room.needs.length > 0
       ? `Sealed. Requires: ${room.needs.join(' + ')}\n`
       : 'Open to all visitors.\n';
     await fs.writeFile(path.join(dir, 'LORE.txt'), hints + `\nRoom tags: ${room.tags.join(', ')}`);
-    
+
     // Hidden reward contents
     for (const item of room.gives) {
-      await fs.writeFile(path.join(dir, `.${item}.acquired`), 
+      await fs.writeFile(path.join(dir, `.${item}.acquired`),
         `You found: ${item}\nGranted at: ${new Date().toISOString()}`);
     }
-    
+
     // Create subdirectories that reference other rooms (puzzle links)
     if (room.name === 'crystal-spire') {
       // Hidden symlink to void-archive only visible with orb-seeing
       await fs.ensureSymlink(
-        path.join(ROOT, 'void-archive'), 
+        path.join(ROOT, 'void-archive'),
         path.join(dir, '.rift-portal')
       );
     }
@@ -153,22 +153,22 @@ fi
 # Grant rewards
 for ITEM in $GIVES; do
   if ! grep -q "\\\"$ITEM\\\"" "$STATE"; then
-    ITEM="$ITEM" STATE="$STATE" node -e "
+    node -e "
       const fs=require('fs');
-      const s=JSON.parse(fs.readFileSync(process.env.STATE));
-      if(!s.tags.includes(process.env.ITEM)){s.tags.push(process.env.ITEM);s.inventory.push(process.env.ITEM);}
-      fs.writeFileSync(process.env.STATE,JSON.stringify(s,null,2));
+      const s=JSON.parse(fs.readFileSync('$STATE'));
+      if(!s.tags.includes('$ITEM')){s.tags.push('$ITEM');s.inventory.push('$ITEM');}
+      fs.writeFileSync('$STATE',JSON.stringify(s,null,2));
     "
     echo "✨ Acquired: $ITEM"
   fi
 done
 
 # Record visit
-TARGET="$TARGET" STATE="$STATE" node -e "
+node -e "
   const fs=require('fs');
-  const s=JSON.parse(fs.readFileSync(process.env.STATE));
-  if(!s.visited.includes(process.env.TARGET)) s.visited.push(process.env.TARGET);
-  fs.writeFileSync(process.env.STATE,JSON.stringify(s,null,2));
+  const s=JSON.parse(fs.readFileSync('$STATE'));
+  if(!s.visited.includes('$TARGET')) s.visited.push('$TARGET');
+  fs.writeFileSync('$STATE',JSON.stringify(s,null,2));
 "
 
 echo "🎮 Entering $TARGET..."
