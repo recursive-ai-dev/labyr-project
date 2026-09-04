@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs-extra');
 const path = require('path');
+const crypto = require("crypto");
 const { generate } = require('random-words');
 const nlp = require('compromise');
 
@@ -12,10 +13,11 @@ const CONFIG = {
 };
 
 // Deterministic random for reproducible structures
-let seed = CONFIG.seed;
+let seedCounter = 0;
 const random = () => {
-  const x = Math.sin(seed++) * 10000;
-  return x - Math.floor(x);
+  const hash = crypto.createHash('sha256');
+  hash.update(String(CONFIG.seed) + '-' + (seedCounter++));
+  return hash.digest().readUInt32LE(0) / 0x100000000;
 };
 
 const ONTOLOGIES = [
@@ -105,7 +107,7 @@ class SemanticFS {
     const templates = ontology.templates;
     
     for (let i = 0; i < CONFIG.branching; i++) {
-      const template = templates[Math.floor(random() * templates.length)];
+      const template = templates[Math.floor(random() * ontology.templates.length)];
       const childWord = generate(1)[0];
       const childName = template.pattern(childWord);
       const childPath = path.join(currentPath, childName);
@@ -133,7 +135,7 @@ class SemanticFS {
     // Create 1-3 files with semantic content
     const count = 1 + Math.floor(random() * 3);
     for (let i = 0; i < count; i++) {
-      const template = ontology.templates[Math.floor(random() * templates.length)];
+      const template = ontology.templates[Math.floor(random() * ontology.templates.length)];
       const artifactWord = generate(1)[0];
       const filename = `${artifactWord}_${contextWord}${template.ext}`;
       const content = ontology.generator(artifactWord, CONFIG.depth);
